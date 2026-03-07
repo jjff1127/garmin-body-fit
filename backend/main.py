@@ -13,7 +13,9 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción: tu dominio Vercel
+    allow_origins=[
+        "https://garmin-body-fit.vercel.app", 
+    ],
     allow_methods=["POST"],
     allow_headers=["*"],
 )
