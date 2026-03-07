@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+garminconnect
+garth
+python-multipart
+pydantic

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { generateFitBlob, downloadFit } from './FitGenerator';
+import GarminUploadModal from './GarminUploadModal';
 
 const DICT = {
   zh: {
@@ -10,6 +11,12 @@ const DICT = {
     error: '生成 .fit 文件时出错',
     generating: '生成中…',
     downloadBtn: '📥 生成并下载 .fit 文件',
+    uploadBtn: '📤 上传至 Garmin Connect',
+    uploading: '同步中...',
+    uploadSuccess: '✅ 已成功同步到 Garmin Connect！',
+    loginTitle: 'Garmin 账户信息',
+    email: '邮箱',
+    password: '密码',
     hint: '* 仅体重为必填项，其余项目为可选。生成的 .fit 文件可以直接导入 Garmin Connect。',
     fields: {
       weight: '体重', percentFat: '体脂率', percentHydration: '体水分',
@@ -22,6 +29,12 @@ const DICT = {
     error: 'Error al generar archivo .fit',
     generating: 'Generando...',
     downloadBtn: '📥 Generar y descargar .fit',
+    uploadBtn: '📤 Subir a Garmin Connect',
+    uploading: 'Sincronizando...',
+    uploadSuccess: '✅ ¡Sincronizado con Garmin Connect!',
+    loginTitle: 'Cuenta de Garmin',
+    email: 'Email',
+    password: 'Contraseña',
     hint: '* Solo el peso es obligatorio. El archivo .fit puede ser importado en Garmin Connect.',
     fields: {
       weight: 'Peso', percentFat: '% Grasa', percentHydration: '% Agua',
@@ -34,6 +47,12 @@ const DICT = {
     error: 'Error generating .fit file',
     generating: 'Generating...',
     downloadBtn: '📥 Generate & Download .fit',
+    uploadBtn: '📤 Upload to Garmin Connect',
+    uploading: 'Syncing...',
+    uploadSuccess: '✅ Successfully synced to Garmin Connect!',
+    loginTitle: 'Garmin Account',
+    email: 'Email',
+    password: 'Password',
     hint: '* Only weight is required. The generated .fit file can be imported into Garmin Connect.',
     fields: {
       weight: 'Weight', percentFat: 'Body Fat %', percentHydration: 'Water %',
@@ -58,8 +77,23 @@ export default function BodyDataForm({ lang = 'es' }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 16));
   const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error'
   const [error, setError] = useState('');
+  
+  // Garmin Modal states
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [currentBlob, setCurrentBlob] = useState(null);
 
   const handleChange = (key, val) => setValues(prev => ({ ...prev, [key]: val }));
+
+  const getPayload = () => ({
+    date: new Date(date),
+    weight: parseFloat(values.weight),
+    percentFat: values.percentFat ? parseFloat(values.percentFat) : undefined,
+    percentHydration: values.percentHydration ? parseFloat(values.percentHydration) : undefined,
+    muscleMass: values.muscleMass ? parseFloat(values.muscleMass) : undefined,
+    boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
+    visceralFatRating: values.visceralFatRating ? parseInt(values.visceralFatRating) : undefined,
+    bmi: values.bmi ? parseFloat(values.bmi) : undefined,
+  });
 
   const handleDownload = async (e) => {
     e.preventDefault();
@@ -67,28 +101,35 @@ export default function BodyDataForm({ lang = 'es' }) {
     setError('');
 
     try {
-      const payload = {
-        date: new Date(date),
-        weight: parseFloat(values.weight),
-        percentFat: values.percentFat ? parseFloat(values.percentFat) : undefined,
-        percentHydration: values.percentHydration ? parseFloat(values.percentHydration) : undefined,
-        muscleMass: values.muscleMass ? parseFloat(values.muscleMass) : undefined,
-        boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
-        visceralFatRating: values.visceralFatRating ? parseInt(values.visceralFatRating) : undefined,
-        bmi: values.bmi ? parseFloat(values.bmi) : undefined,
-      };
-
-      const blob = await generateFitBlob(payload);
-
-
+      const blob = await generateFitBlob(getPayload());
       const ts = new Date(date).toISOString().replace(/[:.]/g, '-').slice(0, 16);
       downloadFit(blob, `garmin-body-${ts}.fit`);
 
       setStatus('success');
-
-      // Limpiamos el botón de loading enseguida
       setTimeout(() => setStatus(null), 3000);
+    } catch (err) {
+      console.error(err);
+      setError(t.error);
+      setStatus('error');
+    }
+  };
 
+  const handleOpenUpload = async (e) => {
+    e.preventDefault();
+    if (!values.weight) {
+      setError(lang === 'zh' ? '请先输入体重' : (lang === 'en' ? 'Please enter weight first' : 'Por favor, introduce el peso primero'));
+      setStatus('error');
+      return;
+    }
+
+    setStatus('loading');
+    setError('');
+
+    try {
+      const blob = await generateFitBlob(getPayload());
+      setCurrentBlob(blob);
+      setShowUploadModal(true);
+      setStatus(null);
     } catch (err) {
       console.error(err);
       setError(t.error);
@@ -97,67 +138,89 @@ export default function BodyDataForm({ lang = 'es' }) {
   };
 
   return (
-    <form className="form-card" onSubmit={handleDownload}>
-      {/* Fecha */}
-      <div className="form-group">
-        <label className="form-label">{t.date}</label>
-        <input
-          type="datetime-local"
-          className="form-input"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          required
-        />
-      </div>
+    <div className="form-card">
+      <form onSubmit={handleDownload} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Fecha */}
+        <div className="form-group">
+          <label className="form-label">{t.date}</label>
+          <input
+            type="datetime-local"
+            className="form-input"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            required
+          />
+        </div>
 
-      {/* Campos numéricos */}
-      <div className="fields-grid">
-        {FIELDS_CONFIG.map(f => (
-          <div className="form-group" key={f.key}>
-            <label className="form-label">
-              {t.fields[f.key]}
-              {f.unit && <span className="unit-badge">{f.unit}</span>}
-              {f.required && <span className="required-star">*</span>}
-            </label>
-            <input
-              type="number"
-              className="form-input"
-              placeholder={f.placeholder}
-              min={f.min}
-              max={f.max}
-              step={f.step}
-              required={f.required}
-              value={values[f.key] || ''}
-              onChange={e => handleChange(f.key, e.target.value)}
-            />
-          </div>
-        ))}
-      </div>
+        {/* Campos numéricos */}
+        <div className="fields-grid">
+          {FIELDS_CONFIG.map(f => (
+            <div className="form-group" key={f.key}>
+              <label className="form-label">
+                {t.fields[f.key]}
+                {f.unit && <span className="unit-badge">{f.unit}</span>}
+                {f.required && <span className="required-star">*</span>}
+              </label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder={f.placeholder}
+                min={f.min}
+                max={f.max}
+                step={f.step}
+                required={f.required}
+                value={values[f.key] || ''}
+                onChange={e => handleChange(f.key, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
 
-      {/* Estado / Error */}
-      {status === 'success' && (
-        <div className="alert alert-success">{t.success}</div>
-      )}
-      {status === 'error' && (
-        <div className="alert alert-error">❌ {error}</div>
-      )}
-
-      {/* Botón */}
-      <button
-        type="submit"
-        className={`btn-primary ${status === 'loading' ? 'btn-loading' : ''}`}
-        disabled={status === 'loading'}
-      >
-        {status === 'loading' ? (
-          <><span className="spinner" /> {t.generating}</>
-        ) : (
-          t.downloadBtn
+        {/* Estado / Error */}
+        {status === 'success' && (
+          <div className="alert alert-success">{t.success}</div>
         )}
-      </button>
+        {status === 'error' && (
+          <div className="alert alert-error">❌ {error}</div>
+        )}
 
-      <p className="form-hint">
-        {t.hint}
-      </p>
-    </form>
+        {/* Action Buttons */}
+        <div className="button-group">
+          <button
+            type="submit"
+            className={`btn-secondary ${status === 'loading' ? 'btn-loading' : ''}`}
+            disabled={status === 'loading'}
+          >
+            {status === 'loading' ? (
+              <><span className="spinner" /> {t.generating}</>
+            ) : (
+              t.downloadBtn
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenUpload}
+            className="btn-primary"
+            disabled={status === 'loading'}
+          >
+            {t.uploadBtn}
+          </button>
+        </div>
+
+        <p className="form-hint">
+          {t.hint}
+        </p>
+      </form>
+
+      {/* Modal de Carga con MFA */}
+      {showUploadModal && currentBlob && (
+        <GarminUploadModal
+          blob={currentBlob}
+          lang={lang}
+          onClose={() => setShowUploadModal(false)}
+        />
+      )}
+    </div>
   );
 }

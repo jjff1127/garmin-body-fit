@@ -95,3 +95,33 @@ export function downloadFit(blob, filename = 'body-data.fit') {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+/**
+ * Envia el archivo .fit generado a nuestro servidor para subirlo a Garmin.
+ * @param {Blob} blob - Archivo .fit generado
+ * @param {string} email - Correo de Garmin Connect
+ * @param {string} password - Contraseña
+ * @returns {Promise<Object>} Resultado de la operación
+ */
+export async function uploadFitToGarmin(blob, email, password) {
+  // Convertir Blob → Base64
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  // Using btoa(String.fromCharCode(...)) for browser compatibility
+  const base64 = btoa(String.fromCharCode(...uint8Array));
+
+  const res = await fetch('/api/upload-garmin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fitBytesBase64: base64,
+      email: email,
+      password: password,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Error al subir los datos a Garmin');
+  }
+  return data;
+}
