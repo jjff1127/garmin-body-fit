@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/usr/src/app            # 将本地 app 文件夹挂载到容器中（热重载）
+      - /usr/src/app/node_modules     # 匿名卷：保护容器内已安装的 node_modules 不被覆盖
+    working_dir: /usr/src/app
+    stdin_open: true
+    tty: true
