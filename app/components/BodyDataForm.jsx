@@ -12,13 +12,13 @@ const DICT = {
     error: '生成 .fit 文件时出错',
     generating: '生成中…',
     downloadBtn: '📥 生成并下载 .fit 文件',
-    uploadBtn: '📤 上传至 Garmin Connect',
+    uploadBtn: '☁️ 上传至 Garmin Connect',
     uploading: '同步中...',
     uploadSuccess: '✅ 已成功同步到 Garmin Connect！',
     loginTitle: 'Garmin 账户信息',
     email: '邮箱',
     password: '密码',
-    hint: '* 仅体重为必填项，其余项目为可选。生成的 .fit 文件可以直接导入 Garmin Connect。',
+    hint: '* 仅体重为必填项。\n📥 方式一 — 填写表单后，下载 .fit 文件并手动导入到 Garmin Connect。\n☁️ 方式二 — 填写表单后，登录 Garmin 账号一键直接上传。',
     fields: {
       weight: '体重', percentFat: '体脂率', percentHydration: '体水分',
       muscleMass: '肌肉量', boneMass: '骨量', visceralFatRating: '内脏脂肪', bmi: 'BMI'
@@ -30,13 +30,13 @@ const DICT = {
     error: 'Error al generar archivo .fit',
     generating: 'Generando...',
     downloadBtn: '📥 Generar y descargar .fit',
-    uploadBtn: '📤 Subir a Garmin Connect',
+    uploadBtn: '☁️ Subir a Garmin Connect',
     uploading: 'Sincronizando...',
     uploadSuccess: '✅ ¡Sincronizado con Garmin Connect!',
     loginTitle: 'Cuenta de Garmin',
     email: 'Email',
     password: 'Contraseña',
-    hint: '* Solo el peso es obligatorio. El archivo .fit puede ser importado en Garmin Connect.',
+    hint: '* Solo el peso es obligatorio.\n📥 Opción 1 — Rellena el formulario, descarga el .fit y súbelo tú mismo a Garmin Connect.\n☁️ Opción 2 — Rellena el formulario, inicia sesión con tu cuenta Garmin y súbelo en un clic.',
     fields: {
       weight: 'Peso', percentFat: '% Grasa', percentHydration: '% Agua',
       muscleMass: 'Masa Muscular', boneMass: 'Masa Ósea', visceralFatRating: 'Grasa Visceral', bmi: 'BMI'
@@ -48,13 +48,13 @@ const DICT = {
     error: 'Error generating .fit file',
     generating: 'Generating...',
     downloadBtn: '📥 Generate & Download .fit',
-    uploadBtn: '📤 Upload to Garmin Connect',
+    uploadBtn: '☁️ Upload to Garmin Connect',
     uploading: 'Syncing...',
     uploadSuccess: '✅ Successfully synced to Garmin Connect!',
     loginTitle: 'Garmin Account',
     email: 'Email',
     password: 'Password',
-    hint: '* Only weight is required. The generated .fit file can be imported into Garmin Connect.',
+    hint: '* Only weight is required.\n📥 Option 1 — Fill in the form, download the .fit file and import it into Garmin Connect.\n☁️ Option 2 — Fill in the form, log in with your Garmin account and upload it in one click.',
     fields: {
       weight: 'Weight', percentFat: 'Body Fat %', percentHydration: 'Water %',
       muscleMass: 'Muscle Mass', boneMass: 'Bone Mass', visceralFatRating: 'Visceral Fat', bmi: 'BMI'
@@ -78,7 +78,7 @@ export default function BodyDataForm({ lang = 'en' }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 16));
   const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error'
   const [error, setError] = useState('');
-  
+
   // Garmin Modal states
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [currentBlob, setCurrentBlob] = useState(null);
@@ -209,7 +209,7 @@ export default function BodyDataForm({ lang = 'en' }) {
           </button>
         </div>
 
-        <p className="form-hint">
+        <p style={{ whiteSpace: 'pre-line' }} className="form-hint">
           {t.hint}
         </p>
       </form>
