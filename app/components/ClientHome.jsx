@@ -25,7 +25,7 @@ const DICT = {
   }
 };
 
-export default function ClientHome({ initialLang = 'es' }) {
+export default function ClientHome({ initialLang = 'en' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [lang, setLang] = useState(initialLang);
@@ -44,7 +44,7 @@ export default function ClientHome({ initialLang = 'es' }) {
     router.push(`?lang=${newLang}`, { scroll: false });
   };
 
-  const t = DICT[lang] || DICT.es;
+  const t = DICT[lang] || DICT.en;
 
   return (
     <main className="main">

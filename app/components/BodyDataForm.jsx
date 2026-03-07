@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { generateFitBlob, downloadFit } from './FitGenerator';
 import GarminUploadModal from './GarminUploadModal';
+import BuyMeCoffee from './BuyMeCoffee';
 
 const DICT = {
   zh: {
@@ -71,8 +72,8 @@ const FIELDS_CONFIG = [
   { key: 'bmi', unit: '', required: false, min: 10, max: 60, step: 0.01, placeholder: '23.5' },
 ];
 
-export default function BodyDataForm({ lang = 'es' }) {
-  const t = DICT[lang] || DICT.es;
+export default function BodyDataForm({ lang = 'en' }) {
+  const t = DICT[lang] || DICT.en;
   const [values, setValues] = useState({ weight: '' });
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 16));
   const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error'
@@ -221,6 +222,9 @@ export default function BodyDataForm({ lang = 'es' }) {
           onClose={() => setShowUploadModal(false)}
         />
       )}
+
+      {/* Support Section */}
+      <BuyMeCoffee lang={lang} />
     </div>
   );
 }

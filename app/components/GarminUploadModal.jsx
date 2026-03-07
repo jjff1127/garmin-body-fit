@@ -4,7 +4,7 @@ import { useState } from 'react';
 // Use environment variable or fallback to localhost during development
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
-export default function GarminUploadModal({ blob, onClose, lang = 'es' }) {
+export default function GarminUploadModal({ blob, onClose, lang = 'en' }) {
   const [step, setStep] = useState('credentials'); // credentials | mfa | uploading | success | error
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,8 +12,7 @@ export default function GarminUploadModal({ blob, onClose, lang = 'es' }) {
   const [sessionId, setSessionId] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // i18n simple mapping
-  const t = {
+  const DICT = {
     es: {
       title: '☁️ Subir a Garmin Connect',
       hint: 'Tus credenciales se envían cifradas y nunca se almacenan.',
@@ -65,7 +64,9 @@ export default function GarminUploadModal({ blob, onClose, lang = 'es' }) {
       retryBtn: '重试',
       errorTitle: '错误'
     }
-  }[lang] || { /* fallback to es if lang not found */ };
+  };
+
+  const t = DICT[lang] || DICT.en;
 
   // ── Paso 1: Login ────────────────────────────────────────────
   const handleLogin = async () => {
@@ -77,7 +78,7 @@ export default function GarminUploadModal({ blob, onClose, lang = 'es' }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      
+
       const data = await res.json();
 
       if (!res.ok) {

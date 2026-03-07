@@ -19,10 +19,10 @@ const SEO_DICT = {
 };
 
 export async function generateMetadata({ searchParams }) {
-  const lang = searchParams.lang || 'es';
-  const t = SEO_DICT[lang] || SEO_DICT.es;
+  const lang = searchParams.lang || 'en';
+  const t = SEO_DICT[lang] || SEO_DICT.en;
   const baseUrl = 'https://garmin-body-fit.vercel.app';
-  const currentUrl = lang === 'es' ? baseUrl : `${baseUrl}?lang=${lang}`;
+  const currentUrl = lang === 'en' ? baseUrl : `${baseUrl}?lang=${lang}`;
 
   return {
     title: t.title,
@@ -31,8 +31,8 @@ export async function generateMetadata({ searchParams }) {
     alternates: {
       canonical: currentUrl,
       languages: {
-        'en-US': `${baseUrl}?lang=en`,
-        'es-ES': baseUrl,
+        'en-US': baseUrl,
+        'es-ES': `${baseUrl}?lang=es`,
         'zh-CN': `${baseUrl}?lang=zh`,
       },
     },
@@ -53,7 +53,7 @@ export async function generateMetadata({ searchParams }) {
 }
 
 export default function Page({ searchParams }) {
-  const lang = searchParams.lang || 'es';
+  const lang = searchParams.lang || 'en';
   
   return (
     <>
