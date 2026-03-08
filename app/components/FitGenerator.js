@@ -48,7 +48,7 @@ export async function generateFitBlob(data) {
     muscleMass: data.muscleMass ?? undefined,
     visceralFatRating: data.visceralFatRating ?? undefined,
     visceralFatMass: undefined,
-    bmi: (data.bmi ? parseFloat(data.bmi) * 100 : undefined), // bmi * 10
+    bmi: (data.bmi ? parseFloat(data.bmi) : undefined),
     physiqueRating: data.physiqueRating ?? undefined,
     metabolicAge: data.metabolicAge ?? undefined,
   });
